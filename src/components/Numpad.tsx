@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Delete, RotateCcw } from "lucide-react";
+import { getDigitColor } from "@/lib/pi-digits";
 
 interface NumpadProps {
   onDigitPress: (digit: string) => void;
@@ -17,9 +18,9 @@ export const Numpad = ({
   lastPressed = null 
 }: NumpadProps) => {
   const digits = [
-    ['7', '8', '9'],
-    ['4', '5', '6'],
     ['1', '2', '3'],
+    ['4', '5', '6'],
+    ['7', '8', '9'],
     ['reset', '0', 'delete']
   ];
 
@@ -47,21 +48,21 @@ export const Numpad = ({
             onClick={() => handleKeyPress(key)}
             disabled={disabled}
             className={cn(
-              "numpad-button aspect-square rounded-xl font-mono text-xl sm:text-2xl font-semibold",
-              "bg-secondary border border-border",
+              "numpad-button aspect-square rounded-xl font-mono text-2xl font-bold",
+              "bg-card border border-border shadow-md",
               "flex items-center justify-center",
               "disabled:opacity-50 disabled:cursor-not-allowed",
+              "active:scale-95 transition-transform",
               isAction && "bg-muted text-muted-foreground",
-              !isAction && "text-foreground hover:bg-secondary/80",
               isLastPressed && "ring-2 ring-primary"
             )}
           >
             {key === 'delete' ? (
-              <Delete className="w-5 h-5 sm:w-6 sm:h-6" />
+              <Delete className="w-6 h-6" />
             ) : key === 'reset' ? (
-              <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6" />
+              <RotateCcw className="w-6 h-6" />
             ) : (
-              <span className={`digit-${key}`}>{key}</span>
+              <span style={{ color: getDigitColor(key) }}>{key}</span>
             )}
           </button>
         );
