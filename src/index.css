@@ -45,17 +45,17 @@
 
     --radius: 1rem;
 
-    /* Digit colors */
-    --digit-0: 0 0% 75%;
-    --digit-1: 210 90% 60%;
-    --digit-2: 142 70% 50%;
-    --digit-3: 0 85% 60%;
-    --digit-4: 280 70% 60%;
-    --digit-5: 42 90% 55%;
-    --digit-6: 180 70% 50%;
-    --digit-7: 320 70% 60%;
-    --digit-8: 25 90% 55%;
-    --digit-9: 260 70% 65%;
+    /* Digit colors - matching example app */
+    --digit-0: 0 0% 50%;
+    --digit-1: 0 0% 100%;
+    --digit-2: 48 100% 50%;
+    --digit-3: 180 100% 50%;
+    --digit-4: 142 70% 45%;
+    --digit-5: 300 60% 70%;
+    --digit-6: 270 70% 55%;
+    --digit-7: 210 100% 50%;
+    --digit-8: 25 100% 50%;
+    --digit-9: 0 100% 50%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 24 9% 10%;
@@ -136,9 +136,22 @@
     @apply border-border;
   }
 
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Outfit', sans-serif;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .safe-area-inset {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 }
 

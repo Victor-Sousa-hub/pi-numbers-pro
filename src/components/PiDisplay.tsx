@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { getDigitClass, PI_DIGITS } from "@/lib/pi-digits";
+import { getDigitColor, PI_DIGITS } from "@/lib/pi-digits";
 import { useEffect, useRef } from "react";
 
 interface PiDisplayProps {
@@ -31,22 +31,22 @@ export const PiDisplay = ({
     : PI_DIGITS.slice(0, currentIndex).split('');
 
   return (
-    <div className="paper-texture rounded-xl p-4 sm:p-6 min-h-[200px] sm:min-h-[280px] shadow-lg">
-      <div className="flex items-center gap-2 mb-3 sm:mb-4 pb-3 border-b border-amber-900/20">
-        <span className="text-3xl sm:text-4xl font-bold text-amber-900">π</span>
-        <span className="text-xl sm:text-2xl font-mono text-amber-800">=</span>
-        <span className="text-xl sm:text-2xl font-mono text-amber-800">3.</span>
-        <span className="ml-auto text-xs sm:text-sm text-amber-700 font-medium">
+    <div className="bg-card/80 backdrop-blur rounded-xl p-4 min-h-[180px] shadow-lg border border-border">
+      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-border">
+        <span className="text-3xl font-bold text-primary">π</span>
+        <span className="text-xl font-mono text-muted-foreground">=</span>
+        <span className="text-xl font-mono text-muted-foreground">3.</span>
+        <span className="ml-auto text-xs text-muted-foreground font-medium">
           {showAll ? `${pageStart + 1}-${pageEnd}` : currentIndex} digits
         </span>
       </div>
       
       <div 
         ref={containerRef}
-        className="font-mono text-lg sm:text-xl md:text-2xl leading-relaxed max-h-[140px] sm:max-h-[180px] overflow-y-auto"
+        className="font-mono text-xl leading-relaxed max-h-[120px] overflow-y-auto"
       >
         {displayDigits.length === 0 ? (
-          <span className="text-amber-400/50 italic text-base">Type the digits of π...</span>
+          <span className="text-muted-foreground/50 italic text-base">Type the digits of π...</span>
         ) : (
           displayDigits.map((digit, idx) => {
             const actualIndex = showAll ? pageStart + idx : idx;
@@ -58,14 +58,11 @@ export const PiDisplay = ({
                 key={actualIndex}
                 ref={isLast ? lastDigitRef : null}
                 className={cn(
-                  "inline-block w-[0.65em] text-center transition-all duration-150",
-                  getDigitClass(digit),
-                  isWrong && "bg-red-500/30 rounded shake",
+                  "inline-block w-[0.65em] text-center transition-all duration-150 font-bold",
+                  isWrong && "bg-destructive/30 rounded shake",
                   isLast && !isWrong && "pop"
                 )}
-                style={{ 
-                  textShadow: isWrong ? '0 0 10px rgba(239, 68, 68, 0.5)' : 'none'
-                }}
+                style={{ color: getDigitColor(digit) }}
               >
                 {digit}
               </span>
