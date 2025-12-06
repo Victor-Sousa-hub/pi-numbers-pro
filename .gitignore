@@ -22,3 +22,20 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Testing
+coverage/
+junit.xml
+test-results/
+
+# Capacitor
+capacitor.config.json.timestamp-*
+capacitor.config.ts.timestamp-*
+
+# OS System Files
+Thumbs.db

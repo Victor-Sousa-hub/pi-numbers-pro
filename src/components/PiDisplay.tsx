@@ -1,74 +1,101 @@
 import { cn } from "@/lib/utils";
 import { getDigitColor, PI_DIGITS } from "@/lib/pi-digits";
-import { useEffect, useRef } from "react";
 
 interface PiDisplayProps {
   currentIndex: number;
   showAll?: boolean;
   wrongIndex?: number | null;
-  pageStart?: number;
-  pageEnd?: number;
 }
 
-export const PiDisplay = ({ 
-  currentIndex, 
-  showAll = false, 
+const ITEMS_PER_PAGE = 50;
+
+export const PiDisplay = ({
+  currentIndex,
+  showAll = false,
   wrongIndex = null,
-  pageStart = 0,
-  pageEnd = 50
 }: PiDisplayProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const lastDigitRef = useRef<HTMLSpanElement>(null);
 
-  useEffect(() => {
-    if (lastDigitRef.current && containerRef.current) {
-      lastDigitRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-  }, [currentIndex]);
-
-  const displayDigits = showAll 
-    ? PI_DIGITS.slice(pageStart, pageEnd).split('')
-    : PI_DIGITS.slice(0, currentIndex).split('');
+  // Calculate current page based on cursor position.
+  // The cursor is at (currentIndex + 1) because index 0 is occupied by "3."
+  const cursorPosition = currentIndex + 1;
+  const currentPage = Math.floor(cursorPosition / ITEMS_PER_PAGE);
+  const pageStart = currentPage * ITEMS_PER_PAGE;
 
   return (
-    <div className="bg-card/80 backdrop-blur rounded-xl p-4 min-h-[180px] shadow-lg border border-border">
-      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-border">
-        <span className="text-3xl font-bold text-primary">π</span>
-        <span className="text-xl font-mono text-muted-foreground">=</span>
-        <span className="text-xl font-mono text-muted-foreground">3.</span>
-        <span className="ml-auto text-xs text-muted-foreground font-medium">
-          {showAll ? `${pageStart + 1}-${pageEnd}` : currentIndex} digits
+    <div className="bg-card/80 backdrop-blur rounded-xl p-3 sm:p-6 shadow-lg border border-border w-full max-w-2xl mx-auto">
+      <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl font-bold text-primary">π</span>
+          <span className="text-sm text-muted-foreground font-medium">
+            Page {currentPage + 1} / 20
+          </span>
+        </div>
+        <span className="text-[10px] text-muted-foreground font-medium">
+          {currentIndex} digits
         </span>
       </div>
-      
-      <div 
-        ref={containerRef}
-        className="font-mono text-xl leading-relaxed max-h-[120px] overflow-y-auto"
-      >
-        {displayDigits.length === 0 ? (
-          <span className="text-muted-foreground/50 italic text-base">Type the digits of π...</span>
-        ) : (
-          displayDigits.map((digit, idx) => {
-            const actualIndex = showAll ? pageStart + idx : idx;
-            const isWrong = wrongIndex !== null && actualIndex === wrongIndex;
-            const isLast = !showAll && idx === displayDigits.length - 1;
-            
+
+      <div className="grid grid-cols-10 gap-1 sm:gap-3 justify-items-center">
+        {Array.from({ length: ITEMS_PER_PAGE }).map((_, idx) => {
+          const absoluteIndex = pageStart + idx;
+
+          // Special case for the very first item of the entire sequence
+          if (absoluteIndex === 0) {
             return (
-              <span
-                key={actualIndex}
-                ref={isLast ? lastDigitRef : null}
-                className={cn(
-                  "inline-block w-[0.65em] text-center transition-all duration-150 font-bold",
-                  isWrong && "bg-destructive/30 rounded shake",
-                  isLast && !isWrong && "pop"
-                )}
-                style={{ color: getDigitColor(digit) }}
+              <div
+                key="header-3"
+                className="w-7 h-9 sm:w-8 sm:h-10 flex items-center justify-center text-xl sm:text-2xl font-mono font-bold text-primary"
               >
-                {digit}
-              </span>
+                3.
+              </div>
             );
-          })
-        )}
+          }
+
+          // For all other items, map to PI_DIGITS
+          // We subtract 1 because index 0 is taken by "3."
+          const digitIndex = absoluteIndex - 1;
+          const digit = PI_DIGITS[digitIndex];
+
+          // If we ran out of digits (shouldn't happen with 1000 digits limit but safe check)
+          if (!digit) return <div key={absoluteIndex} className="w-7 h-9 sm:w-8 sm:h-10" />;
+
+          const isTyped = digitIndex < currentIndex;
+          const isCurrent = digitIndex === currentIndex;
+          const isWrong = wrongIndex !== null && digitIndex === wrongIndex;
+
+          let content = "•";
+          let color = "#52525b"; // zinc-600
+
+          if (isTyped) {
+            content = digit;
+            color = getDigitColor(digit);
+          } else if (isWrong) {
+            content = "•";
+            color = "#ef4444"; // Red
+          } else if (showAll) {
+            content = digit;
+            color = getDigitColor(digit);
+          }
+
+          return (
+            <div
+              key={absoluteIndex}
+              className={cn(
+                "w-7 h-9 sm:w-8 sm:h-10 flex items-center justify-center text-xl sm:text-2xl font-mono transition-all duration-200",
+                isCurrent && !isWrong && "animate-pulse bg-primary/10 rounded",
+                isWrong && "animate-shake bg-destructive/20 rounded",
+                !isTyped && !isWrong && "text-muted-foreground/40"
+              )}
+              style={{ color: isTyped || (showAll && !isWrong) ? color : undefined }}
+            >
+              <span className={cn(
+                isTyped ? "font-bold" : "text-lg sm:text-xl"
+              )}>
+                {content}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -7,10 +7,11 @@ import { useToast } from "@/hooks/use-toast";
 
 const BEST_SCORE_KEY = "pi-game-best-score";
 
-export const GameMode = () => {
-  const { toast } = useToast();
+export const GameMode = ({ onSwitchToPractice }: { onSwitchToPractice: () => void }) => {
+  // Game Mode Component
   const [currentIndex, setCurrentIndex] = useState(0);
   const [wrongIndex, setWrongIndex] = useState<number | null>(null);
+  const [feedbackMessage, setFeedbackMessage] = useState<{ text: string; type: 'success' | 'error' | 'neutral' } | null>(null);
   const [bestScore, setBestScore] = useState(() => {
     const saved = localStorage.getItem(BEST_SCORE_KEY);
     return saved ? parseInt(saved, 10) : 0;
@@ -55,20 +56,19 @@ export const GameMode = () => {
     setTimeout(() => setLastPressed(null), 150);
 
     const expectedDigit = PI_DIGITS[currentIndex];
-    
+
     if (digit === expectedDigit) {
       const newIndex = currentIndex + 1;
       setCurrentIndex(newIndex);
       setWrongIndex(null);
-      
+      setFeedbackMessage(null);
+
       // Check for milestones
       if (newIndex === 10 || newIndex === 50 || newIndex === 100 || newIndex === 500 || newIndex === 1000) {
-        toast({
-          title: `🎉 ${newIndex} digits!`,
-          description: "Amazing progress! Keep going!",
-        });
+        setFeedbackMessage({ text: `🎉 ${newIndex} digits! Amazing progress!`, type: 'success' });
+        setTimeout(() => setFeedbackMessage(null), 3000);
       }
-      
+
       // Update best score
       if (newIndex > bestScore) {
         setBestScore(newIndex);
@@ -76,20 +76,22 @@ export const GameMode = () => {
       }
     } else {
       setWrongIndex(currentIndex);
-      toast({
-        title: "Wrong digit!",
-        description: `Expected ${expectedDigit}, got ${digit}`,
-        variant: "destructive",
-      });
-      
-      setTimeout(() => setWrongIndex(null), 500);
+      setFeedbackMessage({ text: "Game over! Redirecting to practice...", type: 'error' });
+
+      setTimeout(() => {
+        setWrongIndex(null);
+        handleReset();
+        setFeedbackMessage(null);
+        onSwitchToPractice();
+      }, 2000);
     }
-  }, [currentIndex, bestScore, isPlaying, toast]);
+  }, [currentIndex, bestScore, isPlaying, onSwitchToPractice]);
 
   const handleDelete = useCallback(() => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
       setWrongIndex(null);
+      setFeedbackMessage(null);
     }
   }, [currentIndex]);
 
@@ -98,29 +100,38 @@ export const GameMode = () => {
     setWrongIndex(null);
     setGameTime(0);
     setIsPlaying(false);
+    setFeedbackMessage(null);
   }, []);
 
   return (
-    <div className="space-y-6">
-      <GameStats 
-        score={currentIndex} 
+    <div className="space-y-4">
+      <GameStats
+        score={currentIndex}
         bestScore={bestScore}
         time={gameTime}
       />
-      
-      <PiDisplay 
+
+      {feedbackMessage && (
+        <div className={`text-center font-bold text-sm animate-in fade-in slide-in-from-top-2 ${feedbackMessage.type === 'error' ? 'text-destructive' :
+          feedbackMessage.type === 'success' ? 'text-green-500' : 'text-muted-foreground'
+          }`}>
+          {feedbackMessage.text}
+        </div>
+      )}
+
+      <PiDisplay
         currentIndex={currentIndex}
         wrongIndex={wrongIndex}
       />
-      
+
       <Numpad
         onDigitPress={handleDigitPress}
         onDelete={handleDelete}
         onReset={handleReset}
         lastPressed={lastPressed}
       />
-      
-      <p className="text-center text-xs text-muted-foreground">
+
+      <p className="text-center text-[10px] text-muted-foreground">
         Use keyboard or tap the numpad • Press R to reset
       </p>
     </div>
